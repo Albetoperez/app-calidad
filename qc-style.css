@@ -89,11 +89,11 @@ select, input { padding: 8px; border-radius: 5px; border: 1px solid #cbd5e1; fon
 /* --- ESTILOS DE NAVEGACIÓN CORPORATIVA --- */
 .nav-container { display: flex; gap: 10px; align-items: center; }
 
-/* Botón Blanco con borde azul (el que pediste) */
+/* Botón Blanco con borde azul */
 .btn-nav-outline {
-    background: #ffffff !important;
-    color: var(--blue) !important;
-    border: 2px solid var(--blue) !important;
+    background: #ffffff;
+    color: var(--blue);
+    border: 2px solid var(--blue);
     padding: 8px 15px;
     border-radius: 6px;
     font-weight: bold;
@@ -102,13 +102,13 @@ select, input { padding: 8px; border-radius: 5px; border: 1px solid #cbd5e1; fon
     font-size: 13px;
     transition: all 0.2s;
 }
-.btn-nav-outline:hover { background: #f0f7ff !important; transform: translateY(-1px); }
+.btn-nav-outline:hover { background: #f0f7ff; transform: translateY(-1px); }
 
-/* Botón Sólido Blanco (para acciones secundarias como Cargar) */
+/* Botón Sólido Blanco */
 .btn-nav-white {
-    background: #ffffff !important;
-    color: #333 !important;
-    border: 1px solid #ccc !important;
+    background: #ffffff;
+    color: #333;
+    border: 1px solid #ccc;
     padding: 8px 15px;
     border-radius: 6px;
     font-weight: bold;
