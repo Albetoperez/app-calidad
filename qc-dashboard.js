@@ -303,8 +303,17 @@ function sortTable(col) {
     renderListadoTab();
 }
 function exportToExcel() {
-    let table = document.getElementById('tabla-reparaciones');
-    let wb = XLSX.utils.table_to_book(table, {sheet: "Lista_Reparaciones"});
+    let data = tableState.filteredData.map(d => ({
+        Arco: d.arco,
+        Bloque: d.bloque,
+        Tracker: d.id_tracker,
+        Ubicacion: d.ubicacion,
+        Defecto: d.nombre_defecto,
+        Fecha: d.fecha
+    }));
+    let ws = XLSX.utils.json_to_sheet(data);
+    let wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Lista_Reparaciones");
     XLSX.writeFile(wb, "Reporte_QC_Reparaciones.xlsx");
 }
 
