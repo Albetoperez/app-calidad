@@ -1,8 +1,8 @@
+localforage.config({ name: 'SIGMA_QC_V1', storeName: 'calidad_hincas' });
+
 let currentTask = 'C';
 let PARQUE_MASTER = {}; 
 let HISTORIAL_QC = {};
-// ESTO ES CLAVE: Guardamos en una base de datos distinta
-localforage.config({ name: 'SIGMA_QC_V1', storeName: 'calidad_hincas' });
 
 function setTask(task, el) {
     currentTask = task;
@@ -39,20 +39,30 @@ async function importarArchivos(input) {
         });
     }
 
-    await localforage.setItem('PARQUE_MASTER_DATA', PARQUE_MASTER);
-    if (btn) { btn.innerText = `✅ ¡Cargado!`; setTimeout(() => btn.innerText = "📂 Cargar Listados", 2000); }
+    try {
+        await localforage.setItem('PARQUE_MASTER_DATA', PARQUE_MASTER);
+        if (btn) { btn.innerText = `✅ ¡Cargado!`; }
+    } catch (e) {
+        console.error('Error guardando en BD:', e);
+        if (btn) btn.innerText = '❌ Error al guardar';
+    }
+    setTimeout(() => { if (btn) btn.innerText = "📂 Cargar Listados"; }, 2000);
     input.value = '';
     actualizarSelectores(ultimoArcoDetectado);
 }
 
 const parseCoord = (val) => { if(!val) return 0; return parseFloat(String(val).replace(',', '.')); };
 
+function sanitize(str) {
+    const d = document.createElement('div'); d.textContent = str; return d.innerHTML;
+}
+
 function procesarDatosJSON(data) {
     let arcoEnEsteArchivo = '';
     data.forEach(rawRow => {
         let row = {};
         for (let key in rawRow) row[key.trim().toUpperCase()] = rawRow[key];
-        const tId = row['CODIGO'], block = row['BLOQUE'] || 'S/B', rawX = row['X'], rawY = row['Y'], filaNum = row['FILA'], hincaIndex = row['HINCA'];
+        const tId = row['CODIGO'], block = sanitize(String(row['BLOQUE'] || 'S/B')), rawX = row['X'], rawY = row['Y'], filaNum = row['FILA'], hincaIndex = row['HINCA'];
         if (!tId || rawX === undefined || rawY === undefined || !filaNum || !hincaIndex) return;
 
         const tIdStr = String(tId).trim().toUpperCase();
@@ -102,36 +112,37 @@ async function renderMatrix() {
     container.innerHTML = '';
     const ids = Object.keys(PARQUE_MASTER).filter(id => PARQUE_MASTER[id].arco === arco && PARQUE_MASTER[id].block === block);
     if(ids.length === 0) return;
-    
+
     let gMinX = Infinity, gMaxX = -Infinity, gMinY = Infinity, gMaxY = -Infinity;
     ids.forEach(id => {
         const tr = PARQUE_MASTER[id];
         if(tr.minX < gMinX) gMinX = tr.minX; if(tr.maxX > gMaxX) gMaxX = tr.maxX;
         if(tr.minY < gMinY) gMinY = tr.minY; if(tr.maxY > gMaxY) gMaxY = tr.maxY;
     });
-    
+
     const rX = (gMaxX - gMinX) || 1, rY = (gMaxY - gMinY) || 1;
-    const ZX = 8, ZY = 6, M = 300; 
+    const ZX = 8, ZY = 6, M = 300;
+    const historial = await localforage.getItem('HISTORIAL_QC') || {};
     let html = `<div class="map-canvas" style="min-width: ${(rX * ZX) + (M * 2)}px; min-height: ${(rY * ZY) + (M * 2)}px;">`;
-    
+
     for (let id of ids) {
         const tr = PARQUE_MASTER[id];
         const pxX = (((tr.minX + tr.maxX) / 2 - gMinX) * ZX) + M;
         const pxY = ((gMaxY - tr.maxY) * ZY) + M;
-        let pxH = ((tr.maxY - tr.minY) * ZY); if (pxH < 40) pxH = 40; 
+        let pxH = ((tr.maxY - tr.minY) * ZY); if (pxH < 40) pxH = 40;
         const filas = Object.keys(tr.filas).sort((a,b) => a-b);
         const esM = filas.length === 1;
         let wS = !esM ? `width: ${((tr.maxX - tr.minX) * ZX) + 22}px; justify-content: space-between;` : `justify-content: center;`;
-        
+
         html += `<div class="prod-card map-card" style="left: ${pxX}px; top: ${pxY}px; height: ${pxH}px; ${wS}">`;
-        html += `<div class="tracker-title">${tr.name.split('-').slice(-2).join('-')}</div>`;
+        html += `<div class="tracker-title">${sanitize(tr.name.split('-').slice(-2).join('-'))}</div>`;
         for (let fN of filas) {
             const f = tr.filas[fN];
             let tT = fN == 2 ? 'MOT' : 'GEM', cT = fN == 2 ? 'motora' : 'gemela'; if (esM) { tT = 'MONO'; cT = 'mono'; }
             html += `<div class="row-container"><div class="row-tag ${cT}">${tT}</div><div class="cells-grid">`;
             for (let h = 1; h <= f.hincas; h++) {
                 const hId = `${id}-F${fN}-H${h}`;
-                const raw = await localforage.getItem(hId);
+                const raw = historial[hId];
                 const s = (raw && typeof raw === 'object') ? (raw.estado || '') : (raw || '');
                 html += `<div class="cell" id="${hId}" onclick="paint('${hId}')" style="background-color:${getStyleByStatus(s)}; color: ${s==='' ? 'transparent' : 'white'};">${s}</div>`;
             }
@@ -170,15 +181,26 @@ async function paint(id) {
     cell.style.backgroundColor = getStyleByStatus(newTask);
     cell.style.color = newTask === '' ? 'transparent' : 'white';
     
-    // Guardado dual
-    await localforage.setItem(id, dataToSave); 
+    try {
+        await localforage.setItem(id, dataToSave); 
+    } catch (e) {
+        console.error('Error guardando celda:', e);
+        cell.innerText = currentStatus;
+        cell.style.backgroundColor = getStyleByStatus(currentStatus);
+        cell.style.color = currentStatus === '' ? 'transparent' : 'white';
+        return;
+    }
     
     if (newTask === '') {
         delete HISTORIAL_QC[id]; 
     } else {
         HISTORIAL_QC[id] = dataToSave; 
     }
-    await localforage.setItem('HISTORIAL_QC', HISTORIAL_QC); 
+    try {
+        await localforage.setItem('HISTORIAL_QC', HISTORIAL_QC); 
+    } catch (e) {
+        console.error('Error guardando historial:', e);
+    }
 
     actualizarContadores();
 }
@@ -188,15 +210,15 @@ async function actualizarContadores() {
     const block = document.getElementById('select-block').value;
     if (!block || !PARQUE_MASTER) return;
 
-    // Contadores de defectos
-    let cC = 0, cP = 0, cRC = 0, cRB = 0, cCI = 0, cE = 0; 
+    let cC = 0, cP = 0, cRC = 0, cRB = 0, cCI = 0, cE = 0;
     const ids = Object.keys(PARQUE_MASTER).filter(id => PARQUE_MASTER[id].arco === arco && PARQUE_MASTER[id].block === block);
+    const historial = await localforage.getItem('HISTORIAL_QC') || {};
 
     for (let id of ids) {
         for (let fN in PARQUE_MASTER[id].filas) {
             const f = PARQUE_MASTER[id].filas[fN];
             for (let h = 1; h <= f.hincas; h++) {
-                const raw = await localforage.getItem(`${id}-F${fN}-H${h}`);
+                const raw = historial[`${id}-F${fN}-H${h}`];
                 const st = (raw && typeof raw === 'object') ? (raw.estado || '') : (raw || '');
                 if (st === 'C') cC++;
                 if (st === 'P') cP++;

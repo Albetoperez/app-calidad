@@ -3,6 +3,8 @@ localforage.config({ name: 'SIGMA_QC_V1', storeName: 'calidad_hincas' });
 // Registramos el plugin de las etiquetas de datos en Chart.js
 Chart.register(ChartDataLabels);
 
+const sanitize = (str) => { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; };
+
 const DEFECTOS = {
     'C':  { nombre: 'Corte/Mec.', color: '#ff9800' },
     'P':  { nombre: 'POT', color: '#e91e63' },
@@ -12,7 +14,6 @@ const DEFECTOS = {
     'E':  { nombre: 'Extracción', color: '#f44336' }
 };
 
-const levels = {'': 0, 'H': 1, 'P': 2, 'T': 3, 'O': 4, 'M': 5};
 let charts = {};
 let PARQUE_MASTER = {};
 let DB_CACHE = { totalHincasPlanta: 0, totalHincasPorArco: {}, listaDefectos: [] };
@@ -25,7 +26,13 @@ let tableState = {
     sortDir: 'desc'
 };
 
+function destroyCharts() {
+    Object.values(charts).forEach(c => { try { c.destroy(); } catch(e) {} });
+    charts = {};
+}
+
 function switchTab(tabId, el) {
+    destroyCharts();
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     el.classList.add('active');
@@ -56,6 +63,7 @@ async function initDashboard() {
 
 async function construirCache() {
     DB_CACHE.totalHincasPlanta = 0;
+    DB_CACHE.totalHincasPorArco = {};
     DB_CACHE.listaDefectos = [];
 
     // 1. Recorremos PARQUE_MASTER solo para sumar la cantidad de hincas (Síncrono y rápido)
@@ -263,16 +271,20 @@ function renderListadoTab() {
     const start = (tableState.currentPage - 1) * tableState.rowsPerPage;
     const end = start + tableState.rowsPerPage;
     const paginatedData = tableState.filteredData.slice(start, end);
-    let html = paginatedData.map(d => `
-        <tr>
-            <td><b>${d.arco}</b></td>
-            <td>${d.bloque}</td>
-            <td>${d.id_tracker}</td>
-            <td>${d.ubicacion}</td>
-            <td><span class="badge-defecto" style="background:${DEFECTOS[d.cod_defecto].color}">${d.nombre_defecto}</span></td>
-            <td>${d.fecha}</td>
-        </tr>
-    `).join('');
+    let html = paginatedData.map(d => {
+        const s = document.createElement('span');
+        s.className = 'badge-defecto';
+        s.style.background = DEFECTOS[d.cod_defecto].color;
+        s.textContent = d.nombre_defecto;
+        return `<tr>
+            <td><b>${sanitize(d.arco)}</b></td>
+            <td>${sanitize(d.bloque)}</td>
+            <td>${sanitize(d.id_tracker)}</td>
+            <td>${sanitize(d.ubicacion)}</td>
+            <td>${s.outerHTML}</td>
+            <td>${sanitize(d.fecha)}</td>
+        </tr>`;
+    }).join('');
     document.getElementById('body-listado').innerHTML = html || '<tr><td colspan="6">Sin datos para mostrar</td></tr>';
     renderPagination();
 }

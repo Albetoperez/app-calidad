@@ -8,11 +8,11 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="qc-style.css">
     <style>
         :root { --blue: #005596; --accent-orange: #ff9800; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f3f7; margin: 0; padding: 20px; color: #333; }
         header { background: var(--blue); color: white; padding: 15px 25px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .logo-area { display: flex; align-items: center; gap: 15px; }
         .brand { font-weight: 900; color: var(--accent-orange); font-size: 1.2rem; border-right: 2px solid var(--accent-orange); padding-right: 10px; }
         .app-name { color: #e0e0e0; font-weight: bold; font-size: 0.9rem;}
         
@@ -34,8 +34,6 @@
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-bottom: 20px; border: 1px solid #eee;}
         h2 { margin-top: 0; color: var(--blue); font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
         
-        .btn-back { background: #444; color: white; text-decoration: none; padding: 10px 18px; border-radius: 6px; font-weight: bold; font-size: 13px; }
-
         .table-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         table { width: 100%; border-collapse: collapse; font-size: 13px; background: white; }
         th { background: #f8f9fa; color: #555; text-transform: uppercase; font-size: 11px; padding: 12px; border-bottom: 2px solid #ddd; cursor: pointer; user-select: none; }
@@ -54,12 +52,6 @@
 </head>
 <body>
 
-    <style>
-        .nav-container { display: flex; gap: 10px; align-items: center; }
-        .btn-nav-outline { background: #ffffff; color: #005596; border: 2px solid #005596; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; text-decoration: none; font-size: 13px; transition: all 0.2s; display: inline-block; }
-        .btn-nav-outline:hover { background: #f0f7ff; transform: translateY(-1px); }
-    </style>
-    
     <header>
         <div class="logo-area">
             <img src="logo.jpg" alt="Elecnor Logo" style="max-height: 40px;">
@@ -80,10 +72,10 @@
     </div>
 
     <div class="controls-bar" id="global-date-filters">
-        <strong style="color:var(--main-bg);">Filtro Fechas:</strong>
+        <strong>Filtro Fechas:</strong>
         <div>Desde: <input type="date" id="date-from"></div>
         <div>Hasta: <input type="date" id="date-to"></div>
-        <button class="btn-filter" onclick="applyFilters()" style="background:var(--main-bg); color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer; font-weight:bold;">Aplicar Filtro</button>
+        <button class="btn-filter" onclick="applyFilters()">Aplicar Filtro</button>
     </div>
 
     <div class="tabs">
@@ -97,7 +89,7 @@
     <div id="view-detalle" class="view">
         <div class="card" style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
             <strong>Seleccionar Arco:</strong>
-            <select id="select-arco-dash" onchange="refreshDetalle()" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-weight: bold; color: var(--main-bg);"></select>
+            <select id="select-arco-dash" onchange="refreshDetalle()" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-weight: bold;"></select>
         </div>
         <div id="detalle-content"></div>
     </div>
