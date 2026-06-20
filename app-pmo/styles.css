@@ -1,0 +1,513 @@
+/* ==========================================================================
+   SIGMA PMO - HOJA DE ESTILOS PRINCIPAL (styles.css)
+   ========================================================================== */
+
+:root { 
+    --blue: #005596; 
+    --blue-btn: #0066cc;
+    --orange: #ff9800; 
+    --bg: #f0f3f7;
+    --border: #ddd;
+    --gray: #f4f7f9;
+}
+
+* { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+body { margin: 0; background: var(--bg); user-select: none; }
+
+/* --- HEADER Y LOGOTIPOS --- */
+header { background: var(--blue); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-bottom: 20px; border-radius: 0 0 8px 8px; }
+.logo-area { display: flex; align-items: center; gap: 15px; }
+.header-logo-box { background: white; padding: 4px 8px; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+.header-logo-box img { height: 35px; width: auto; object-fit: contain; }
+.brand { font-weight: 900; font-size: 1.1rem; border-right: 1px solid #ffffff55; padding-right: 15px; }
+.app-name { color: #ffffff; font-weight: bold; font-size: 0.9rem; margin-left: 5px; }
+
+/* --- BOTONES GENERALES --- */
+.btn-nav-outline { background: #ffffff; color: var(--blue); border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; text-decoration: none; font-size: 13px; text-transform: uppercase; }
+.btn-action { background: var(--orange); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; text-decoration: none; font-size: 14px; }
+.btn-export { background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
+.btn-save { background: var(--orange); color: white; border: none; padding: 15px 30px; border-radius: 8px; font-weight: 900; cursor: pointer; display: inline-block; margin: 20px 0; box-shadow: 0 4px 10px rgba(255,152,0,0.3); text-transform: uppercase; position: relative !important; left: auto !important; bottom: auto !important; }
+.btn-save:disabled, .btn-export:disabled { cursor: not-allowed; opacity: 0.6; }
+.btn-save, .btn-export, .btn-action, .btn-nav-outline, .btn-portada-blue, .btn-lock { transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s; }
+.btn-save:hover, .btn-export:hover, .btn-action:hover { transform: translateY(-1px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
+.btn-save:active, .btn-export:active, .btn-action:active { transform: translateY(0); }
+
+/* --- PORTADA (INDEX) --- */
+.portada-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 85vh; text-align: center; padding: 20px; }
+.portada-header-card { background: white; padding: 40px; border-radius: 12px; border-top: 6px solid var(--blue); width: 100%; max-width: 550px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; }
+.portada-header-card img { max-width: 180px; margin-bottom: 25px; }
+.portada-header-card h1 { color: #002855; margin: 0 0 10px 0; font-size: 1.5rem; font-weight: 900; }
+.portada-header-card h2 { color: #888; margin: 0; font-size: 0.85rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+.btn-portada-blue { width: 100%; max-width: 480px; padding: 16px 20px; border-radius: 10px; display: flex; align-items: center; gap: 15px; background: var(--blue-btn); color: white; border: none; cursor: pointer; margin-bottom: 12px; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+.btn-portada-blue .icon-box { font-size: 1.5rem; }
+.btn-portada-blue div strong { display: block; font-size: 1.1rem; margin-bottom: 2px; }
+.btn-portada-blue div small { color: #e2e8f0; font-size: 0.85rem; font-weight: normal; }
+
+/* --- LAYOUT GENERAL APP --- */
+.container-fluid { margin: 20px auto; max-width: 1200px; display: flex; gap: 20px; padding: 0 20px; }
+.sidebar { width: 280px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); height: fit-content; }
+.btn-sidebar { width: 100%; padding: 12px; text-align: left; background: none; border: none; font-weight: bold; color: #666; cursor: pointer; border-radius: 6px; margin-bottom: 5px; font-size: 0.9rem; }
+.btn-sidebar.active { background: var(--blue); color: white; }
+.main-content { flex-grow: 1; background: white; padding: 30px; border-radius: 12px; border-top: 5px solid var(--blue); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+
+/* --- ESTRUCTURA WBS Y FORMULARIOS --- */
+#parte-acordeones, #parte-certificaciones { display: grid; grid-template-columns: repeat(auto-fill, minmax(48%, 1fr)); gap: 20px; align-items: start; }
+.group-container { background: white; border: 1px solid #e0e4e9; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 15px;}
+.group-header { background: #f8fafc; padding: 12px 20px; font-size: 0.9rem; border-bottom: 1px solid #eee; color: var(--blue); text-transform: uppercase; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+.config-table { width: 100%; border-collapse: collapse; }
+.config-table th { background: #fafafa; padding: 10px; font-size: 0.75rem; color: #888; text-align: left; border-bottom: 1px solid #eee; text-transform: uppercase; }
+.config-table td { padding: 10px 15px; border-bottom: 1px solid #eee; vertical-align: center; }
+.cfg-input { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; }
+.cfg-input-header { background: transparent; border: none; color: var(--blue); font-weight: bold; font-size: 1rem; width: 80%; outline: none; }
+.btn-lock { background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background 0.3s; }
+.btn-lock.locked { background: #dc3545; }
+.add-group-form { background: #f8fafc; padding: 20px; border: 2px dashed var(--blue); border-radius: 8px; margin-bottom: 15px; text-align: center; }
+.input-disabled { background-color: #f0f0f0 !important; color: #888; pointer-events: none; border-color: #e0e0e0; }
+.btn-disabled { display: none !important; }
+
+/* Controles personalizados WBS */
+.input-sub-meta { min-width: 75px !important; padding: 6px 4px !important; font-weight: bold; font-size: 0.9rem; }
+.select-sub-unidad { min-width: 85px !important; padding: 6px 24px 6px 10px !important; appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%23005596' d='M0 0l5 5 5-5z'/></svg>"); background-repeat: no-repeat; background-position: right 10px center; background-size: 10px; background-color: white; cursor: pointer; }
+.select-sub-unidad:disabled, .select-sub-unidad.input-disabled { background-color: #f0f0f0 !important; color: #888; cursor: not-allowed; }
+
+/* --- COMPONENTES DASHBOARD --- */
+.card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin: 0 20px; }
+.card h2 { color: var(--blue); border-bottom: 2px solid var(--orange); padding-bottom: 10px; font-size: 1.2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;}
+.select-disc { padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-weight: bold; color: var(--blue); }
+
+.tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding: 10px 40px; background: white; border-bottom: 1px solid #eee; }
+.tab { padding: 10px 20px; border: none; background: none; font-weight: bold; color: #888; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; }
+.tab.active { color: var(--blue); border-bottom: 3px solid var(--blue); }
+
+/* Filtros rápidos */
+.btn-quick-filter { padding: 5px 12px; border: 1px solid var(--blue); background: white; color: var(--blue); border-radius: 14px; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+.btn-quick-filter:hover { background: var(--blue); color: white; }
+.btn-quick-filter.active { background: var(--blue); color: white; }
+
+/* --- ETIQUETAS, TICKETS Y BARRA DE PROGRESO --- */
+.badge-row { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.badge { display: inline-block; padding: 3px 6px; border-radius: 4px; font-weight: bold; font-size: 0.7rem; border: 1px solid transparent; white-space: nowrap; }
+.badge-meta { background: #f1f5f9; color: #475569; border-color: #cbd5e1; }
+.badge-acum { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+.badge-sobrecoste { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+.badge-certif-hoy { background: #fff7ed; color: #c2410c; border-color: #fdba74; }
+.badge-hoy { color: #166534; font-size: 0.7rem; font-weight: bold; text-align: right; margin-bottom: 4px; display: flex; justify-content: flex-end; align-items: center; gap: 5px;}
+.input-add { background: #fffbeb !important; border-color: #fcd34d !important; color: #b45309; }
+.progress-bar-bg { width: 100%; height: 6px; background: #eee; border-radius: 3px; margin-top: 5px; overflow: hidden; }
+.progress-bar-fill { height: 100%; background: #005596; border-radius: 3px; transition: width 0.5s ease; }
+
+.ticket-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px dashed #ccc; }
+.ticket-row:last-child { border-bottom: none; }
+.ticket-title { font-weight: bold; color: #333; font-size: 0.9rem; }
+.ticket-sub { font-size: 0.8rem; color: #666; }
+.ticket-val { font-size: 1.2rem; font-weight: 900; color: var(--blue); }
+
+/* --- ESTADOS DE CARGA Y ERROR --- */
+.loading-spinner { text-align: center; padding: 30px; color: #888; font-weight: bold; }
+.loading-spinner::before { content: ''; display: block; width: 32px; height: 32px; border: 3px solid #e0e0e0; border-top-color: #005596; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px auto; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.error-message { background: #fef2f2; color: #dc2626; padding: 20px; border-radius: 8px; border: 1px solid #fecaca; text-align: center; font-weight: bold; margin: 20px 0; }
+.empty-state { background: #f8fafc; color: #94a3b8; padding: 40px 20px; border-radius: 8px; border: 2px dashed #cbd5e1; text-align: center; font-weight: bold; margin: 20px 0; font-size: 0.95rem; }
+
+/* --- TABLA RAG --- */
+.rag-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.rag-table th { background: var(--blue); color: white; padding: 12px 10px; text-align: left; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+.rag-table td { padding: 10px; border-bottom: 1px solid #e2e8f0; color: #333; }
+.rag-table tbody tr:hover { background: #f8fafc; }
+.rag-table tbody tr:nth-child(even) { background: #fafafa; }
+.rag-table tbody tr:nth-child(even):hover { background: #f1f5f9; }
+.rag-table .rag-total-row { background: #1e293b !important; color: white !important; }
+.rag-table .rag-total-row td { color: white !important; font-weight: 900; border-top: 2px solid var(--blue); padding: 12px 10px; }
+.rag-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-weight: bold; font-size: 0.75rem; white-space: nowrap; }
+
+/* --- GANTT VISUAL --- */
+.gantt-table { width: 100%; border-collapse: collapse; min-width: 900px; font-size: 0.8rem; }
+.gantt-table th { background: #f8fafc; color: var(--blue); padding: 10px; text-align: left; border-bottom: 2px solid #cbd5e1; position: sticky; top: 0; z-index: 10; text-transform: uppercase; font-size: 0.75rem;}
+.gantt-table td { padding: 8px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+.gantt-table tr:hover { background: #f8fafc; }
+.gantt-track { position: relative; width: 100%; height: 26px; background: #f8fafc; border-radius: 4px; border: 1px dashed #e2e8f0; }
+.gantt-bar-plan { position: absolute; top: 3px; height: 8px; background: #cbd5e1; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+.gantt-bar-real { position: absolute; top: 13px; height: 10px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: width 0.5s ease; }
+.gantt-status { font-weight: bold; display: flex; align-items: center; gap: 5px; }
+.lock-icon { font-size: 1rem; }
+.gantt-timeline-header { position: relative; height: 25px; width: 100%; border-bottom: 1px solid #cbd5e1; margin-bottom: 5px; }
+.gantt-month-tick { position: absolute; top: 0; bottom: 0; border-left: 1px solid #94a3b8; font-size: 0.65rem; color: #475569; padding-left: 4px; text-transform: uppercase; font-weight: bold; display: flex; align-items: flex-end; padding-bottom: 2px;}
+.gantt-today-label { position: absolute; top: -5px; font-size: 0.6rem; color: white; background: #dc2626; font-weight: bold; padding: 2px 6px; border-radius: 4px; transform: translateX(-50%); z-index: 20; box-shadow: 0 2px 4px rgba(220,38,38,0.3);}
+.gantt-today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: rgba(220, 38, 38, 0.6); border-left: 1px dashed #dc2626; z-index: 5; pointer-events: none; }
+
+/* --- VENTANA FLOTANTE (MODAL VÍNCULOS) --- */
+.header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.btn-header { background: #f8fafc; color: var(--blue); border: 2px solid var(--blue); padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.2s; font-size: 0.85rem; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+.btn-header:hover { background: var(--blue); color: white; }
+.btn-header.locked { background: #dc2626; border-color: #dc2626; color: white; }
+.btn-header.unlocked { background: #16a34a; border-color: #16a34a; color: white; }
+.btn-vinculos { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; font-weight: bold; width: 100%; }
+.btn-vinculos:hover { background: #dbeafe; }
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+.modal-content { background: white; padding: 20px; border-radius: 12px; width: 90%; max-width: 500px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+.modal-content h3 { margin-top: 0; color: var(--blue); border-bottom: 2px solid var(--orange); padding-bottom: 10px; }
+.checkbox-list { overflow-y: auto; flex-grow: 1; margin-bottom: 20px; border: 1px solid #eee; padding: 10px; border-radius: 6px; }
+.checkbox-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-bottom: 1px solid #f8fafc; }
+.checkbox-item:hover { background: #f1f5f9; }
+.checkbox-item input { transform: scale(1.2); cursor: pointer; }
+.checkbox-item label { cursor: pointer; font-size: 0.85rem; color: #333; flex-grow: 1; }
+
+/* --- ÁRBOL ECONÓMICO EXPANDIBLE --- */
+.tree-row-disc { border-left: 3px solid var(--blue); }
+.tree-row-group { border-left: 3px solid #94a3b8; }
+.tree-row-item { border-left: 3px solid #e2e8f0; }
+.tree-row-disc:hover, .tree-row-group:hover { background: #e8f0fe !important; }
+#eco-tree-table td { transition: all 0.15s ease; }
+
+/* === RESPONSIVE RULES === */
+@media (max-width: 768px) {
+    .container-fluid { flex-direction: column; }
+    .sidebar { width: 100%; }
+    .main-content { padding: 15px; }
+    .rag-table { font-size: 0.75rem; }
+    .rag-table th, .rag-table td { padding: 6px 4px; }
+}
+
+/* === REGLAS DE IMPRESIÓN Y MOTOR PDF === */
+@media print {
+    body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    header, .tabs, .btn-quick-filter, .btn-export, .btn-action, .btn-nav-outline, a[href] { display: none !important; }
+    .card { box-shadow: none; border: 1px solid #ddd; margin: 0 0 15px 0; page-break-inside: avoid; }
+    #area-impresion-pdf { padding: 10px; width: 100%; }
+    .rag-table td, .rag-table th { padding: 6px 8px; font-size: 0.75rem; }
+    .rag-badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    canvas { max-width: 100% !important; height: auto !important; }
+    #rag-table-card { page-break-inside: avoid; }
+}
+
+.exportando-pdf .card { box-shadow: none; border: 1px solid #ddd; }
+.exportando-pdf .rag-badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+/* --- PLANTILLA CORPORATIVA PARA PDF --- */
+.pdf-template-content { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b; background: white; line-height: 1.4; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.pdf-pagina { width: 190mm; min-height: 277mm; padding: 10mm; position: relative; box-sizing: border-box; }
+.pdf-portada { background: linear-gradient(160deg, #f0f4f8 0%, #ffffff 40%, #ffffff 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; position: relative; overflow: hidden; }
+.pdf-portada::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 8px; background: linear-gradient(90deg, #005596, #ff9800); }
+.pdf-portada-logo { font-size: 2.8rem; font-weight: 900; color: #005596; letter-spacing: 4px; margin-bottom: 4px; }
+.pdf-portada-logo-sub { font-size: 1rem; font-weight: 600; color: #64748b; letter-spacing: 2px; text-transform: uppercase; }
+.pdf-portada-badge { display: inline-block; background: #005596; color: white; padding: 6px 20px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin: 30px 0 10px; }
+.pdf-portada-titulo { font-size: 2.2rem; font-weight: 900; color: #002855; text-transform: uppercase; letter-spacing: 1.5px; margin: 15px 0; line-height: 1.2; }
+.pdf-portada-linea { width: 60mm; height: 3px; background: #ff9800; margin: 20px auto; border-radius: 2px; }
+.pdf-portada-subtitulo { font-size: 1rem; color: #64748b; margin-bottom: 50px; font-weight: 500; }
+.pdf-portada-info { margin-top: 20px; font-size: 0.9rem; color: #475569; line-height: 2.2; }
+.pdf-portada-info strong { color: #005596; font-weight: 700; }
+.pdf-portada-pie { position: absolute; bottom: 15mm; font-size: 0.7rem; color: #94a3b8; text-align: center; width: calc(100% - 20mm); border-top: 1px solid #e2e8f0; padding-top: 8px; }
+
+.pdf-seccion-titulo { font-size: 1.3rem; font-weight: 900; color: #005596; border-bottom: 3px solid #ff9800; padding-bottom: 6px; margin: 0 0 18px; text-transform: uppercase; letter-spacing: 0.5px; }
+.pdf-seccion-subtitulo { font-size: 1rem; font-weight: 700; color: #334155; margin: 20px 0 12px; padding: 6px 10px; background: #f1f5f9; border-left: 4px solid #005596; }
+
+.pdf-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
+.pdf-kpi-card { background: #f8fafc; border-radius: 6px; padding: 10px 8px; text-align: center; border-bottom: 3px solid #005596; }
+.pdf-kpi-card h4 { font-size: 0.6rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.3px; margin: 0 0 4px; }
+.pdf-kpi-card .pdf-kpi-val { font-size: 1.2rem; font-weight: 900; color: #005596; }
+.pdf-kpi-card.pdf-kpi-destacado { border-bottom-color: #ff9800; }
+.pdf-kpi-card.pdf-kpi-purpura { border-bottom-color: #7c3aed; }
+.pdf-kpi-card.pdf-kpi-purpura .pdf-kpi-val { color: #6d28d9; }
+
+.pdf-tabla { width: 100%; border-collapse: collapse; font-size: 0.7rem; margin-bottom: 15px; }
+.pdf-tabla thead th { background: #005596 !important; color: white !important; padding: 7px 6px; text-align: left; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.pdf-tabla tbody td { padding: 5px 6px; border-bottom: 1px solid #e2e8f0; color: #1e293b; }
+.pdf-tabla tbody tr:nth-child(even) { background: #f8fafc; }
+.pdf-tabla .pdf-total-row { background: #1e293b !important; color: white !important; font-weight: 900; }
+.pdf-tabla .pdf-total-row td { color: white !important; border-top: 2px solid #005596; padding: 8px 6px; }
+
+.pdf-disciplina-header { font-size: 1.1rem; font-weight: 900; color: #005596; margin: 0 0 12px; padding: 10px 14px; background: #e8f0fe; border-left: 5px solid #005596; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.pdf-grupo-wbs { margin-bottom: 14px; }
+.pdf-grupo-titulo { font-size: 0.8rem; font-weight: 700; color: #334155; padding: 5px 10px; background: #f1f5f9; border-left: 3px solid #ff9800; margin-bottom: 4px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.pdf-tabla-detalle {
+    width: 100%;
+    min-width: 100%;
+    table-layout: fixed; /* Fuerza a que las columnas respeten el porcentaje horizontal */
+    border-collapse: collapse;
+    font-size: 0.7rem;
+    margin-bottom: 8px;
+}
+.pdf-tabla-detalle thead th { background: #475569 !important; color: white !important; padding: 5px 6px; text-align: left; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.pdf-tabla-detalle tbody td { padding: 4px 6px; border-bottom: 1px solid #e2e8f0; }
+.pdf-tabla-detalle tbody tr:nth-child(even) { background: #fafafa; }
+
+/* --- ELIMINAR FLECHAS Y SCROLL DE LAS CASILLAS NUMÉRICAS --- */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+/* --- COMPONENTE MINI-CALENDARIO E HISTORIAL --- */
+.calendar-container { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+.calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-weight: 900; color: var(--blue); font-size: 1rem; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; }
+.cal-day-header { font-size: 0.7rem; color: #64748b; text-transform: uppercase; font-weight: bold; padding-bottom: 5px; }
+.cal-day { position: relative; padding: 10px 0; background: white; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; color: #333; }
+.cal-day:hover { background: #eff6ff; border-color: var(--blue); transform: translateY(-1px); }
+.cal-day.has-data { font-weight: 900; color: var(--blue); background: #f0f7ff; border-color: #bfdbfe; }
+.cal-day.selected { background: var(--blue); color: white; border-color: var(--blue); }
+.cal-day.empty { background: transparent; border: none; cursor: default; }
+.cal-day.empty:hover { transform: none; }
+.cal-dot-container { display: flex; justify-content: center; gap: 4px; position: absolute; bottom: 3px; width: 100%; }
+.cal-dot { width: 6px; height: 6px; border-radius: 50%; }
+.dot-prod { background-color: var(--blue); }
+.dot-cert { background-color: #16a34a; }
+.cal-day.selected .dot-prod, .cal-day.selected .dot-cert { border: 1px solid white; }
+.btn-ver-todo { background: #eff6ff; color: var(--blue); border: 1px solid #bfdbfe; padding: 6px 15px; border-radius: 15px; font-size: 0.8rem; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+.btn-ver-todo:hover { background: #dbeafe; }
+
+/* --- ACORDEÓN PARA EL HISTORIAL --- */
+.dia-acordeon-header {
+    background: #334155;
+    color: white;
+    padding: 12px 15px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: bold;
+    margin-top: 15px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s, transform 0.1s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.dia-acordeon-header:hover {
+    background: #475569;
+    transform: translateY(-1px);
+}
+.dia-acordeon-content {
+    display: none; /* Oculto por defecto */
+    padding-top: 5px;
+    padding-bottom: 10px;
+    animation: fadeIn 0.3s ease;
+}
+.dia-acordeon-content.open {
+    display: block; /* Se muestra al abrir */
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================================
+   ESTÁNDAR GANTT (ESTILO PRIMAVERA P6)
+   ========================================= */
+
+/* 1. LÍNEA BASE (El Plan Original) - Fija, estrecha y gris */
+.gantt-baseline {
+    position: absolute;
+    top: 4px;
+    height: 6px;
+    background-color: #94a3b8; /* Gris corporativo neutro */
+    border-radius: 2px;
+    z-index: 1;
+}
+
+/* 2. PROYECCIÓN REAL (La Realidad) - Se estira o retrasa */
+.gantt-actual {
+    position: absolute;
+    top: 14px;
+    height: 12px;
+    border: 1px dashed;
+    border-radius: 2px;
+    z-index: 2;
+    overflow: hidden;
+    background-color: transparent;
+}
+.gantt-actual.critico { border-color: #dc2626; } /* Borde Rojo si va tarde */
+.gantt-actual.en-plazo { border-color: #16a34a; } /* Borde Verde si va bien */
+
+/* 3. AVANCE FÍSICO (El relleno dentro de la Proyección) */
+.gantt-progress {
+    height: 100%;
+}
+.gantt-progress.critico { background-color: #dc2626; }
+.gantt-progress.en-plazo { background-color: #16a34a; }
+
+/* 4. TEXTO DE PORCENTAJE (Para no adivinar a ojo) */
+.gantt-pct-text {
+    position: absolute;
+    top: 12px;
+    font-size: 11px;
+    font-weight: bold;
+    color: #334155;
+    z-index: 3;
+    padding-left: 5px;
+}
+
+/* 5. HAMACAS DE GRUPO (Summary Bars P6) - Barras negras con picos */
+.gantt-summary {
+    position: absolute;
+    top: 10px;
+    height: 8px;
+    background-color: #334155;
+    z-index: 2;
+}
+/* Picos (Triángulos) que caen en los extremos de la hamaca */
+.gantt-summary::before, .gantt-summary::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 0;
+    height: 0;
+    border-top: 12px solid #334155;
+}
+.gantt-summary::before {
+    left: 0;
+    border-right: 6px solid transparent;
+}
+.gantt-summary::after {
+    right: 0;
+    border-left: 6px solid transparent;
+}
+
+/* =========================================
+   ESTILOS DE CABECERA COMPACTA Y STICKY
+   ========================================= */
+
+.dashboard-header-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: #ffffff;
+    padding: 10px 15px 0 15px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    margin-bottom: 15px;
+    border-bottom: 1px solid #e2e8f0;
+    border-radius: 0 0 8px 8px;
+}
+
+.control-panel-compact {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.filtros-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+}
+
+.quick-filters {
+    display: flex;
+    gap: 4px;
+    margin-left: 10px;
+}
+
+.quick-filters button {
+    padding: 3px 8px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    border: 1px solid #005596;
+    background: transparent;
+    color: #005596;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.quick-filters button.active {
+    background: #005596;
+    color: white;
+}
+
+.export-group {
+    display: flex;
+    gap: 6px;
+}
+
+.export-group button {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #f8fafc;
+    color: #0f172a;
+    transition: all 0.2s;
+}
+.export-group button:hover {
+    background-color: #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.tabs-compact {
+    display: flex;
+    gap: 5px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.tabs-compact button {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+}
+
+.tabs-compact button:hover {
+    color: #005596;
+}
+
+.tabs-compact button.active {
+    color: #005596;
+    border-bottom: 3px solid #005596;
+}
+/* =========================================
+   INMOVILIZAR ENCABEZADO: SÓLO RATIOS
+   ========================================= */
+#wrapper-ratios {
+    max-height: 65vh; 
+    overflow-y: auto;
+}
+
+#wrapper-ratios table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: #f1f5f9;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* =========================================
+   INMOVILIZAR ENCABEZADO: TABLA RAG
+   ========================================= */
+
+/* 1. Le damos altura y scroll vertical al div que envuelve la tabla RAG */
+#rag-table-card > div {
+    max-height: 65vh !important;
+    overflow-y: auto !important;
+}
+
+/* 2. Separamos bordes para que el inmovilizado no se rompa (el truco clave) */
+#rag-tabla {
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+}
+
+/* 3. Clavamos la cabecera al techo */
+#rag-tabla thead th {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 100 !important;
+    background-color: #005596 !important; /* Azul Elecnor */
+    color: #ffffff !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
+    border-bottom: none !important;
+}

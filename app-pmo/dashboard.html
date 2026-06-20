@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIGMA PMO - Dashboard Analítico</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        /* Estilos específicos de componentes inyectados dinámicamente */
+        .gantt-status { font-weight: bold; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-area">
+            <span class="brand">ELECNOR</span>
+            <span class="app-name">PMO Dashboard</span>
+        </div>
+        <div>
+            <a href="index.html" style="color:white; text-decoration:none; font-weight:bold; margin-right: 15px;">🏠 Volver</a>
+            <a href="index.html#parte" class="btn-action">📝 Parte Diario</a>
+        </div>
+    </header>
+
+    <div class="dashboard-header-sticky">
+        
+        <div class="control-panel-compact">
+            
+            <div class="filtros-group">
+                <label style="font-weight: bold; color: #005596;">Disciplina:</label>
+                <select id="filtro-disc" class="select-disc" style="padding: 4px; border-radius: 4px;" onchange="cambiarDisciplina()">
+                    <option value="__TODAS__">🌐 Todas las disciplinas</option>
+                </select>
+                
+                <div id="wrapper-filtro-item" style="display:none; align-items:center; gap:5px;">
+                    <label style="font-weight: bold; color: #005596;">Ítem:</label>
+                    <select id="filtro-item" class="select-disc" style="padding: 4px; border-radius: 4px;" onchange="actualizarTabActual()"></select>
+                </div>
+
+                <div class="fecha-container" style="display:flex; align-items:center; gap:5px; margin-left: 10px;">
+                    <label style="font-weight: bold; color: #005596;">Desde:</label>
+                    <input type="date" id="fecha-desde" class="cfg-input" style="width: 115px; padding: 4px;" onchange="actualizarTodo()">
+                    
+                    <label style="font-weight: bold; color: #005596; margin-left: 5px;">Hasta:</label>
+                    <input type="date" id="fecha-hasta" class="cfg-input" style="width: 115px; padding: 4px;" onchange="actualizarTodo()">
+                </div>
+
+                <div class="quick-filters">
+                    <button class="btn-quick-filter active" data-range="todo" onclick="aplicarFiltroRapido('todo')">Todo</button>
+                    <button class="btn-quick-filter" data-range="7" onclick="aplicarFiltroRapido('7')">7d</button>
+                    <button class="btn-quick-filter" data-range="30" onclick="aplicarFiltroRapido('30')">30d</button>
+                    <button class="btn-quick-filter" data-range="90" onclick="aplicarFiltroRapido('90')">90d</button>
+                </div>
+            </div>
+
+            <div class="export-group">
+                <button onclick="exportarExcelProf()" title="Descargar Excel">📊 Excel</button>
+                <button onclick="exportarHistoricoPartes()" title="Descargar Histórico">📋 Partes</button>
+                <button id="btn-pdf-specific" onclick="exportarInformeEspecifico()" title="PDF de la Disciplina">📄 PDF Fase</button>
+                <button id="btn-pdf-full" onclick="exportarInformeCompleto()" title="PDF Completo del Proyecto">📑 PDF Global</button>
+            </div>
+        </div>
+
+        <div class="tabs-compact">
+            <button id="tab-curvas" class="active" onclick="cambiarTab('curvas')">📈 Curvas S</button>
+            <button id="tab-barras" onclick="cambiarTab('barras')">📊 RAG</button>
+            <button id="tab-ratios" onclick="cambiarTab('ratios')">🧮 Ratios</button>
+            <button id="tab-gantt" onclick="cambiarTab('gantt')">🗓️ Gantt</button>
+            <button id="tab-economico" onclick="cambiarTab('economico')">💰 Costes</button>
+            <button id="tab-resumen" onclick="cambiarTab('resumen')">📊 Resumen Eco.</button>
+        </div>
+    </div>
+
+    <div id="area-impresion-pdf">
+        
+        <div class="card" style="margin-bottom: 20px; padding: 20px;">
+            <h2 id="titulo-grafico" style="margin-top: 5px;">Cargando análisis...</h2>
+            
+            <div id="wrapper-curvas" style="display: block;">
+                <div style="height: 350px; position: relative; background: white; margin-bottom: 30px;">
+                    <canvas id="chartMain"></canvas>
+                </div>
+                <div id="wrapper-curva-fisica-bloque" style="border-top: 1px dashed #ccc; padding-top: 20px;">
+                    <h3 style="color: var(--blue); margin-bottom: 15px;">📉 Detalle de Curva S Física (Cantidades)</h3>
+                    <div style="height: 320px; position: relative; background: white; display: flex; align-items: center; justify-content: center;">
+                        <div id="mensaje-aviso-fisico" style="display: none; color: #64748b; font-style: italic; text-align: center; font-size: 0.95rem; padding: 20px;">
+                            🔍 Selecciona una disciplina y un ítem en los filtros superiores para analizar su evolución física en cantidades.
+                        </div>
+                        <canvas id="chartFisico"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div id="wrapper-barras" style="display: none;">
+                <div style="height: 380px; position: relative; background: white;">
+                    <canvas id="chartBarras"></canvas>
+                </div>
+            </div>
+
+            <div id="wrapper-ratios" style="display: none; width: 100%; overflow-x: auto; background: white;">
+                <table class="gantt-table" style="font-size: 0.8rem; text-align: left; width: 100%;">
+                    <thead>
+                        <tr style="background: #f1f5f9; color: var(--blue);">
+                            <th style="padding:10px; min-width:180px;">Actividad / WBS</th>
+                            <th style="text-align:center;">Meta Total</th>
+                            <th style="text-align:center;">Ratio Contrato<br><small>(ud/día)</small></th>
+                            <th style="text-align:center;">% Debiera<br><small>(Hoy)</small></th>
+                            <th style="text-align:center;">Ud. Debieran<br><small>(Hoy)</small></th>
+                            <th style="text-align:center; background:#fff7ed; color:#c2410c;">Prod. Real<br><small>Acumulada</small></th>
+                            <th style="text-align:center;">Ud. Desviadas</th>
+                            <th style="text-align:center;">% Desvío</th>
+                            <th style="text-align:center; background:#f0fdf4; color:#15803d;">Ratio Real<br><small>(Histórico)</small></th>
+                            <th style="text-align:center; background:#fbf2ff; color:#6b21a8; font-weight:bold;">Ratio Real<br><small>(Últ. 5 Días)</small></th>
+                            <th style="text-align:center; min-width:105px;">F. Fin Est.<br><small>(Ritmo Actual)</small></th>
+                            <th style="text-align:center; color:#b91c1c; font-weight:bold;">Ratio Necesario<br><small>(Para Cumplir)</small></th>
+                        </tr>
+                    </thead>
+                    <tbody id="ratios-tbody">
+                        <tr><td colspan="12" style="text-align:center; padding:20px; color:#888;">Cargando matriz analítica...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="wrapper-economico" style="display: none; width: 100%; overflow-x: auto; background: white;">
+                <div id="economico-content" style="padding: 10px 0;">
+                    <div class="loading-spinner" style="margin:40px auto;">Cargando análisis económico...</div>
+                </div>
+            </div>
+
+            <div id="wrapper-resumen" style="display: none; width: 100%; overflow-x: auto; background: white;">
+                <div id="resumen-content" style="padding: 10px 0;">
+                    <div class="loading-spinner" style="margin:40px auto;">Cargando resumen económico...</div>
+                </div>
+            </div>
+
+            <div id="gantt-wrapper" style="display: none; width: 100%; overflow-x: auto; background: white; flex-direction: column;">
+                <div style="display: flex; justify-content: flex-end; padding: 10px 20px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; border-top: 1px solid #e2e8f0;">
+                    <div style="background: #e2e8f0; border-radius: 6px; padding: 4px; display: inline-flex; gap: 4px;">
+                        <button id="btn-gantt-detallado" onclick="setModoGantt('detallado')" style="padding: 6px 12px; border: none; background: white; border-radius: 4px; cursor: pointer; font-weight: bold; color: var(--blue); box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-size: 0.85rem;">Vista Detallada</button>
+                        <button id="btn-gantt-agrupado" onclick="setModoGantt('agrupado')" style="padding: 6px 12px; border: none; background: transparent; border-radius: 4px; cursor: pointer; font-weight: bold; color: #64748b; font-size: 0.85rem;">Vista Agrupada</button>
+                    </div>
+                </div>
+                <div id="gantt-container"></div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 30px; display: none;" id="rag-table-card">
+            <h2 style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
+                <span>📊 Resumen Operativo — Semáforo RAG</span>
+                <span id="rag-fecha-ref" style="font-size: 0.75rem; color: #888; font-weight: normal;"></span>
+            </h2>
+            <div style="overflow-x: auto;">
+                <table class="rag-table" id="rag-tabla">
+                    <thead>
+                        <tr>
+                            <th>Disciplina / Grupo de Trabajo</th>
+                            <th style="text-align: center;">Nº Ítems</th>
+                            <th style="text-align: center;">Completados</th>
+                            <th style="text-align: center;">% Avance Real</th>
+                            <th>Estado de Plazo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rag-tbody">
+                        <tr><td colspan="5" style="text-align: center; padding: 20px; color: #888;">Cargando datos operativos...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="pdf-template-container" style="display:none; position:fixed; left:0; top:0; z-index:-1; pointer-events:none;"></div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>

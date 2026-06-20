@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SIGMA PMO - Control de Producción</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <div class="header-logo-box">
+                <img src="logo.jpg" alt="Logo">
+            </div>
+            <span class="brand">ELECNOR</span>
+            <span class="app-name">PRODUCCIÓN</span>
+        </div>
+        <div id="header-nav" style="display: none;">
+            <button class="btn-nav-outline" onclick="irInicio()">Volver al Inicio</button>
+        </div>
+    </header>
+
+    <div id="view-portada" class="portada-container">
+        <div class="portada-header-card">
+            <img src="logo.jpg" alt="Logo Proyecto" style="max-width: 200px; height: auto;">
+            <h1>PROJECT MANAGEMENT APP</h1>
+            <h2>DELEGACIÓN RENOVABLES, GAS Y AGUA</h2>
+        </div>
+        
+        <button class="btn-portada-blue" onclick="abrirConfig()">
+            <span class="icon-box">🎯</span>
+            <div>
+                <strong>Metas de Proyecto</strong>
+                <small>Configurar WBS y Línea Base</small>
+            </div>
+        </button>
+        
+        <button class="btn-portada-blue" onclick="abrirParte()">
+            <span class="icon-box">📝</span>
+            <div>
+                <strong>Parte Diario</strong>
+                <small>Reporte Técnico de Obra</small>
+            </div>
+        </button>
+
+        <button class="btn-portada-blue" onclick="abrirHistorial()">
+            <span class="icon-box">🗂️</span>
+            <div>
+                <strong>Consultar Historial</strong>
+                <small>Ver partes de días anteriores</small>
+            </div>
+        </button>
+        
+        <button class="btn-portada-blue" onclick="window.location.href='dashboard.html'">
+            <span class="icon-box">📊</span>
+            <div>
+                <strong>Dashboard Estratégico</strong>
+                <small>Curvas S, KPIs y Exportaciones</small>
+            </div>
+        </button>
+
+    </div>
+
+    <div id="view-config" style="display: none;">
+        <div class="container-fluid">
+            <div class="sidebar" id="sidebar-disc"></div>
+            <div class="main-content">
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--orange); padding-bottom: 10px;">
+                    </div>
+                
+                <div id="groups-area"></div>
+                <div id="groups-area-coste" style="display: none;"></div>
+                
+                <div id="add-group-ui" class="add-group-form" style="display: none;">
+                    <input type="text" id="new-group-name" class="cfg-input" placeholder="Escribe el nombre del nuevo grupo..." style="width: 60%; display: inline-block;">
+                    <button class="btn-action" onclick="guardarNuevoGrupo()">✅ Aceptar</button>
+                    <button class="btn-nav-outline" onclick="cancelarNuevoGrupo()">❌ Cancelar</button>
+                </div>
+                
+                <button id="btn-show-add" class="btn-save" style="background:#eee; color:#666; width:100%; box-shadow:none; border:2px dashed #ccc; margin-bottom: 10px;" onclick="mostrarUIAdicionGrupo()">+ Añadir Nuevo Grupo de Trabajo</button>
+                
+                <div style="display: flex; gap: 10px; width: 100%;">
+                    <button id="btn-save-wbs" class="btn-save" style="flex: 1;" onclick="guardarConfig()">💾 GUARDAR CAMBIOS EN WBS</button>
+                    <button class="btn-save" style="flex: 1; background-color: #4a5568; color: white;" onclick="importarMetasDesdeProd()">📥 IMPORTAR METAS DE PROD</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-parte" style="display: none;">
+        <div class="tabs" id="tabs-parte"></div> 
+        <div class="container-fluid" style="max-width: 100%;">
+            <div class="main-content" style="width: 100%; max-width: 100%;">
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid #ff9800; padding-bottom: 10px;">
+                    <h2 style="color: #005596; margin: 0;">Registro de Producción</h2>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <label style="font-weight: bold; color: #005596; font-size: 0.9rem;">Fecha:</label>
+                        <input type="date" id="fecha-parte" class="cfg-input" style="width: 160px;" onchange="refrescarParte()">
+                    </div>
+                </div>
+                
+                <div id="parte-acordeones"></div>
+                <div id="parte-certificaciones" style="display: none;"></div>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="btn-save" onclick="guardarParte()">💾 GUARDAR PRODUCCIÓN DEL DÍA</button>
+                </div>
+                <div id="certif-save-area" style="display: none; text-align: center; margin-top: 30px;">
+                    <button class="btn-save" onclick="guardarCertificacion()">💾 GUARDAR CERTIFICACIÓN</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-historial" style="display: none;">
+        <div class="container-fluid" style="max-width: 800px;">
+            <div class="main-content" style="width: 100%;">
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid var(--blue); padding-bottom: 10px;">
+                    <h2 style="color: var(--blue); margin: 0;">Historial de Obra</h2>
+                    <button class="btn-ver-todo" onclick="seleccionarFechaHistorial('')">👁️ Ver Muro Completo</button>
+                </div>
+                
+                <div id="calendario-historial" class="calendar-container"></div>
+                <input type="hidden" id="fecha-historial">
+                
+                <div id="tabs-historial" class="tabs" style="padding:0; border-bottom:2px solid #eee; margin-bottom:15px;"></div>
+                <div id="historial-lista"></div>
+                
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
