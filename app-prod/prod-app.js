@@ -90,8 +90,7 @@ function setAppMode(mode) {
     
     if(document.getElementById('btn-mode-em')) document.getElementById('btn-mode-em').classList.toggle('active', mode === 'EM');
     if(document.getElementById('btn-mode-za')) document.getElementById('btn-mode-za').classList.toggle('active', mode === 'ZA');
-    if(document.getElementById('btn-dash-za')) document.getElementById('btn-dash-za').classList.toggle('active', mode === 'DASH_ZA');
-    if(document.getElementById('btn-dash-pt')) document.getElementById('btn-dash-pt').classList.toggle('active', mode === 'DASH_PT');
+    // btn-dash-za / btn-dash-pt removed (unused)
 
     const panelEM = document.getElementById('summary-panel');
     const panelZA = document.getElementById('summary-panel-za');
@@ -382,7 +381,11 @@ function renderMatrixSelector() {
     else if (currentAppMode === 'DASH_PT') { renderDashboardPuntuales(); }
 }
 
+let _panInitialized = false;
+let _panZoomInitialized = false;
+
 async function renderMatrix() {
+    _panInitialized = false;
     try {
         const arco = document.getElementById('select-arco').value;
         const block = document.getElementById('select-block').value;
@@ -441,9 +444,8 @@ async function renderMatrix() {
             let checks = HISTORIAL_CAJAS[id] || {}; let count = contarChecks(checks);
             let colorClass = 'sb-red'; if(count === 6) colorClass = 'sb-green'; else if(count > 0) colorClass = 'sb-orange';
             const numCaja = sb.name.split('-').slice(2).join('-').split('_')[0];
-            const safeId = escapeJsStr(id);
             const htmlSbId = safeHtmlId(id);
-            html += `<div id="sb-${htmlSbId}" class="string-box ${colorClass}" style="position: absolute; left: ${pxX}px; top: ${pxY}px; width: ${wS}px; height: ${pxH}px;" title="Ver Checklist" onclick="abrirModalCaja('${safeId}')"><span>${escapeHtml(numCaja)}</span></div>`;
+            html += `<div id="sb-${htmlSbId}" class="string-box ${colorClass}" style="position: absolute; left: ${pxX}px; top: ${pxY}px; width: ${wS}px; height: ${pxH}px;" title="Ver Checklist" data-action="caja" data-id="${escapeHtml(id)}"><span>${escapeHtml(numCaja)}</span></div>`;
         }
 
         for (let id of ids) {
@@ -456,20 +458,18 @@ async function renderMatrix() {
             let wS = !esM ? `width: ${((tr.maxX - tr.minX) * SCALE_X) + 22}px; justify-content: space-between;` : `justify-content: center;`;
             
             html += `<div class="prod-card map-card" style="position: absolute; left: ${pxX}px; top: ${pxY}px; height: ${pxH}px; ${wS}">`;
-            const safeId = escapeJsStr(id);
             const safeName = escapeHtml(tr.name.split('-').slice(-2).join('-'));
-            html += `<div class="tracker-title" style="cursor:pointer;" onclick="paintTracker('${safeId}')" title="Pintar tracker completo">${safeName}</div>`;
+            html += `<div class="tracker-title" style="cursor:pointer;" data-action="tracker" data-id="${escapeHtml(id)}" title="Pintar tracker completo">${safeName}</div>`;
             for (let fN of filas) {
                 const f = tr.filas[fN];
                 let tT = fN == 2 ? 'MOT' : 'GEM'; let cT = fN == 2 ? 'motora' : 'gemela'; if (esM) { tT = 'MONO'; cT = 'mono'; }
-                html += `<div class="row-container"><div class="row-tag ${cT}" style="cursor:pointer;" onclick="paintRow('${safeId}', '${fN}')" title="Pintar fila completa">${tT}</div><div class="cells-grid">`;
+                html += `<div class="row-container"><div class="row-tag ${cT}" style="cursor:pointer;" data-action="row" data-id="${escapeHtml(id)}" data-fn="${fN}" title="Pintar fila completa">${tT}</div><div class="cells-grid">`;
                 for (let h = 1; h <= f.hincas; h++) {
                     const hId = `${id}-F${fN}-H${h}`;
-                    const safeHId = escapeJsStr(hId);
                     const htmlHId = safeHtmlId(hId);
                     const rawData = HISTORIAL_PROD[hId];
                     const s = (rawData && typeof rawData === 'object') ? (rawData.estado || '') : (rawData || '');
-                    html += `<div class="cell" id="${htmlHId}" onclick="paint('${safeHId}')" style="background-color:${getStyleByStatus(s)}; color: ${s==='' ? 'transparent' : '#333'};">${s}</div>`;
+                    html += `<div class="cell" id="${htmlHId}" data-action="cell" data-hid="${escapeHtml(hId)}" style="background-color:${getStyleByStatus(s)}; color: ${s==='' ? 'transparent' : '#333'};">${s}</div>`;
                 }
                 html += `</div></div>`;
             }
@@ -482,12 +482,16 @@ async function renderMatrix() {
         
         actualizarContadores();
         initPanEM();
+        setupMatrixDelegation();
     } catch(e) {
         console.error("Error crítico dibujando EM:", e);
     }
 }
 
 function initPanEM() {
+    if (_panInitialized) return;
+    _panInitialized = true;
+
     const container = document.getElementById('matrix-container');
     if (!container) return;
 
@@ -538,6 +542,25 @@ function initPanEM() {
     container.addEventListener('touchstart', onDown, { passive: false });
     container.addEventListener('touchmove', onMove, { passive: false });
     container.addEventListener('touchend', onUp);
+}
+
+function setupMatrixDelegation() {
+    const container = document.getElementById('matrix-container');
+    if (!container) return;
+    container.addEventListener('click', function(e) {
+        const target = e.target.closest('[data-action]');
+        if (!target) return;
+        const action = target.dataset.action;
+        if (action === 'caja') {
+            abrirModalCaja(target.dataset.id);
+        } else if (action === 'tracker') {
+            paintTracker(target.dataset.id);
+        } else if (action === 'row') {
+            paintRow(target.dataset.id, target.dataset.fn);
+        } else if (action === 'cell') {
+            paint(target.dataset.hid);
+        }
+    });
 }
 
 function normalizeZanjaType(ref) {
@@ -598,6 +621,7 @@ function getColorPuntual(count, max) {
 }
 
 function renderMatrixZanjas() {
+    _panZoomInitialized = false;
     try {
         const arco = document.getElementById('select-arco').value;
         const container = document.getElementById('matrix-container');
@@ -684,9 +708,8 @@ function renderMatrixZanjas() {
             const strokeColor = getZanjaColorByProgress(z.id, maxMetros);
             
             const grosorFinal = 4 / pzScale;
-            const safeZId = escapeJsStr(z.id);
             
-            svgHtml += `<line x1="${pxX1}" y1="${pxY1}" x2="${pxX2}" y2="${pxY2}" stroke="${strokeColor}" stroke-width="${grosorFinal}" stroke-linecap="round" style="pointer-events:auto; cursor:pointer;" onclick="abrirModalZanja('${safeZId}')"></line>`;
+            svgHtml += `<line x1="${pxX1}" y1="${pxY1}" x2="${pxX2}" y2="${pxY2}" stroke="${strokeColor}" stroke-width="${grosorFinal}" stroke-linecap="round" style="pointer-events:auto; cursor:pointer;" data-action="zanja" data-id="${escapeHtml(z.id)}"></line>`;
 
             if (type !== 'ENTRADA_PS') {
                 const pLen = Math.sqrt(Math.pow(pxX2 - pxX1, 2) + Math.pow(pxY2 - pxY1, 2));
@@ -714,7 +737,6 @@ function renderMatrixZanjas() {
             const refUp = p.ref.toUpperCase();
             const c = '#000000'; 
             const sw = 2; 
-            const pIdSafe = escapeJsStr(p.id);
             const htmlPId = safeHtmlId(p.id);
             let checks = HISTORIAL_PUNTUALES[p.id] || {};
             
@@ -726,7 +748,7 @@ function renderMatrixZanjas() {
                 let count = contarChecksPuntual(checks, 'arqueta');
                 let fillCol = getColorPuntual(count, 6);
 
-                svgHtml += `<rect id="pt-${htmlPId}" x="${pxX - s/2}" y="${pxY - s/2}" width="${s}" height="${s}" fill="${fillCol}" stroke="${c}" stroke-width="${sw}" style="pointer-events:auto; cursor:pointer;" onclick="abrirModalPuntual('${pIdSafe}', 'arqueta', '${escapeJsStr(p.ref)}')"></rect>`;
+                svgHtml += `<rect id="pt-${htmlPId}" x="${pxX - s/2}" y="${pxY - s/2}" width="${s}" height="${s}" fill="${fillCol}" stroke="${c}" stroke-width="${sw}" style="pointer-events:auto; cursor:pointer;" data-action="puntual" data-id="${escapeHtml(p.id)}" data-ptype="arqueta" data-ref="${escapeHtml(p.ref)}"></rect>`;
             } 
             else if (refUp.includes('POSTE CAJA')) {
                 countsPT.csb++;
@@ -739,7 +761,7 @@ function renderMatrixZanjas() {
                 const s2 = s/2;
                 const triPath = `M ${pxX},${pxY - s2} L ${pxX + s2},${pxY + s2} L ${pxX - s2},${pxY + s2} Z`;
                 
-                svgHtml += `<path id="pt-${htmlPId}" d="${triPath}" fill="${fillCol}" stroke="${c}" stroke-width="${sw}" style="pointer-events:auto; cursor:pointer;" onclick="abrirModalPuntual('${pIdSafe}', 'box', '${escapeJsStr(p.ref)}')"/>`;
+                svgHtml += `<path id="pt-${htmlPId}" d="${triPath}" fill="${fillCol}" stroke="${c}" stroke-width="${sw}" style="pointer-events:auto; cursor:pointer;" data-action="puntual" data-id="${escapeHtml(p.id)}" data-ptype="box" data-ref="${escapeHtml(p.ref)}"/>`;
                 svgHtml += `<circle cx="${pxX}" cy="${pxY + 2.5}" r="1.5" fill="${c}" style="pointer-events:none;"></circle>`; 
                 svgHtml += `<text x="${pxX}" y="${pxY - s2 - 4}" fill="${c}" font-size="9" font-weight="bold" text-anchor="middle" font-family="sans-serif" style="pointer-events:none;">CSB</text>`;
             }
@@ -757,9 +779,8 @@ function renderMatrixZanjas() {
 
                 const r = 6; 
                 const o = r * 0.7071; 
-                let safeRef = refUp.includes('FC-') ? 'CCTV / FC' : escapeJsStr(p.ref);
-                
-                svgHtml += `<circle id="pt-${htmlPId}" cx="${pxX}" cy="${pxY}" r="${r}" fill="${fillCol}" stroke="${c}" stroke-width="${sw}" style="pointer-events:auto; cursor:pointer;" onclick="abrirModalPuntual('${pIdSafe}', 'baculo', '${safeRef}')"></circle>`;
+                const safeRef = refUp.includes('FC-') ? 'CCTV / FC' : p.ref;
+                svgHtml += `<circle id="pt-${htmlPId}" cx="${pxX}" cy="${pxY}" r="${r}" fill="${fillCol}" stroke="${c}" stroke-width="${sw}" style="pointer-events:auto; cursor:pointer;" data-action="puntual" data-id="${escapeHtml(p.id)}" data-ptype="baculo" data-ref="${escapeHtml(safeRef)}"></circle>`;
                 svgHtml += `<line x1="${pxX - o}" y1="${pxY - o}" x2="${pxX + o}" y2="${pxY + o}" stroke="${c}" stroke-width="${sw}" style="pointer-events:none;"></line>`;
                 svgHtml += `<line x1="${pxX - o}" y1="${pxY + o}" x2="${pxX + o}" y2="${pxY - o}" stroke="${c}" stroke-width="${sw}" style="pointer-events:none;"></line>`;
             }
@@ -783,7 +804,7 @@ function renderMatrixZanjas() {
                 const s2 = s/2;
                 const triPath = `M ${pxX},${pxY - s2} L ${pxX + s2},${pxY + s2} L ${pxX - s2},${pxY + s2} Z`;
 
-                svgHtml += `<path id="pt-${htmlPId}" d="${triPath}" fill="${fillCol}" stroke="${c}" stroke-width="${sw}" style="pointer-events:auto; cursor:pointer;" onclick="abrirModalPuntual('${pIdSafe}', '${pType}', '${escapeJsStr(shortName)}')"/>`;
+                svgHtml += `<path id="pt-${htmlPId}" d="${triPath}" fill="${fillCol}" stroke="${c}" stroke-width="${sw}" style="pointer-events:auto; cursor:pointer;" data-action="puntual" data-id="${escapeHtml(p.id)}" data-ptype="${escapeHtml(pType)}" data-ref="${escapeHtml(shortName)}"/>`;
                 svgHtml += `<circle cx="${pxX}" cy="${pxY + 2.5}" r="1.5" fill="${c}" style="pointer-events:none;"></circle>`; 
                 svgHtml += `<text x="${pxX}" y="${pxY - s2 - 4}" fill="${c}" font-size="9" font-weight="bold" text-anchor="middle" font-family="sans-serif" style="pointer-events:none;">${escapeHtml(shortName)}</text>`; 
             }
@@ -808,7 +829,7 @@ function renderMatrixZanjas() {
             const sw = 2 / pzScale; // Grosor ligeramente mayor para facilitar el click
             
             // 2. Agrupar líneas para que se abran al hacer click
-            svgHtml += `<g style="cursor:pointer; pointer-events:auto;" onclick="abrirModalVallado('${escapeJsStr(parcelaId)}', '${escapeJsStr(parcela)}', ${Math.round(metrosParcela)})">`;
+            svgHtml += `<g style="cursor:pointer; pointer-events:auto;" data-action="vallado" data-pid="${escapeHtml(parcelaId)}" data-pname="${escapeHtml(parcela)}" data-metros="${Math.round(metrosParcela)}">`;
 
             for(let i = 0; i < pts.length; i++) {
                 let p1 = pts[i]; let p2 = pts[(i + 1) % pts.length];
@@ -901,7 +922,8 @@ function renderMatrixZanjas() {
                 vContainer.innerHTML = '';
             }
         }
-        initPanZoomZanjas(); 
+        initPanZoomZanjas();
+        setupSVGDelegation();
     } catch(e) {
         console.error("Error crítico dibujando Zanjas:", e);
     }
@@ -938,7 +960,27 @@ document.addEventListener('click', function(e) {
     }
 });
 
+function setupSVGDelegation() {
+    const viewport = document.getElementById('zanjas-viewport');
+    if (!viewport) return;
+    viewport.addEventListener('click', function(e) {
+        const target = e.target.closest('[data-action]');
+        if (!target) return;
+        const action = target.dataset.action;
+        if (action === 'zanja') {
+            abrirModalZanja(target.dataset.id);
+        } else if (action === 'puntual') {
+            abrirModalPuntual(target.dataset.id, target.dataset.ptype, target.dataset.ref);
+        } else if (action === 'vallado') {
+            abrirModalVallado(target.dataset.pid, target.dataset.pname, parseInt(target.dataset.metros));
+        }
+    });
+}
+
 function initPanZoomZanjas() {
+    if (_panZoomInitialized) return;
+    _panZoomInitialized = true;
+
     const viewport = document.getElementById('zanjas-viewport'); 
     const layer = document.getElementById('pan-zoom-layer');
     if (!viewport || !layer) return;
@@ -1036,7 +1078,7 @@ function abrirModalCaja(id) {
     let html = `<div id="modal-caja-overlay" class="modal-overlay" onclick="cerrarModalCaja()"><div class="modal-content" onclick="event.stopPropagation()"><h3>Checklist: <span style="color:var(--accent);">${escapeHtml(sb.name)}</span></h3><div class="checklist">`;
     items.forEach(item => { 
         const isChecked = checks[item.id] !== undefined ? 'checked' : ''; 
-        html += `<label class="check-item"><input type="checkbox" ${isChecked} onchange="toggleCheckCaja('${escapeJsStr(id)}', '${item.id}', this.checked)">${item.label}</label>`; 
+        html += `<label class="check-item"><input type="checkbox" ${isChecked} data-action="check-caja" data-id="${escapeHtml(id)}" data-item="${item.id}">${item.label}</label>`; 
     });
     html += `</div><button class="btn-close" onclick="cerrarModalCaja()">Guardar y Cerrar</button></div></div>`;
     document.body.insertAdjacentHTML('beforeend', html);
@@ -1097,7 +1139,7 @@ function abrirModalPuntual(id, type, refName) {
     let html = `<div id="modal-punctual-overlay" class="modal-overlay" onclick="cerrarModalPuntual()"><div class="modal-content" onclick="event.stopPropagation()"><h3>Checklist: <span style="color:var(--accent);">${escapeHtml(refName)}</span></h3><div class="checklist">`;
     items.forEach(item => { 
         const isChecked = checks[item.id] !== undefined ? 'checked' : ''; 
-        html += `<label class="check-item"><input type="checkbox" ${isChecked} onchange="toggleCheckPuntual('${escapeJsStr(id)}', '${item.id}', this.checked)">${item.label}</label>`; 
+        html += `<label class="check-item"><input type="checkbox" ${isChecked} data-action="check-puntual" data-id="${escapeHtml(id)}" data-item="${item.id}">${item.label}</label>`; 
     });
     html += `</div><button class="btn-close" onclick="cerrarModalPuntual()">Guardar y Cerrar</button></div></div>`;
     document.body.insertAdjacentHTML('beforeend', html);
@@ -1293,6 +1335,15 @@ async function paintTracker(trackerId) {
     actualizarContadores();
 }
 
+let _syncPMOTimer = null;
+function debouncedSyncPMO() {
+    if (_syncPMOTimer) clearTimeout(_syncPMOTimer);
+    _syncPMOTimer = setTimeout(() => {
+        _syncPMOTimer = null;
+        sincronizarConPMO();
+    }, 30000);
+}
+
 function actualizarContadores() {
     const arco = document.getElementById('select-arco').value;
     const block = document.getElementById('select-block').value;
@@ -1342,7 +1393,7 @@ function actualizarContadores() {
     if(eOrange) eOrange.innerText = `${cOrange}`;
     if(eGreen) eGreen.innerText = `${cGreen} / ${totalCajas} totales`;
 
-    sincronizarConPMO();
+    debouncedSyncPMO();
 }
 
 window.onload = async () => {
@@ -1377,11 +1428,32 @@ window.onload = async () => {
             HISTORIAL_PROD = h;
         }
 
-        if(s) actualizarSelectores(); 
+        if(s) actualizarSelectores();
+        setupModalDelegation();
     } catch (error) {
         console.error("Error al cargar datos:", error);
     }
 };
+
+function setupModalDelegation() {
+    document.addEventListener('change', function(e) {
+        const target = e.target;
+        const action = target.dataset.action;
+        if (action === 'check-caja') {
+            toggleCheckCaja(target.dataset.id, target.dataset.item, target.checked);
+        } else if (action === 'check-puntual') {
+            toggleCheckPuntual(target.dataset.id, target.dataset.item, target.checked);
+        } else if (action === 'check-vallado') {
+            toggleCheckVallado(target.dataset.id, target.dataset.item, target.checked);
+        }
+    });
+    document.addEventListener('input', function(e) {
+        const target = e.target;
+        if (target.dataset.action === 'zanja-input') {
+            changeMetrosZanja(target.dataset.id, target.dataset.item, target.value, parseInt(target.dataset.max));
+        }
+    });
+}
 
 function abrirModalZanja(id) {
     cerrarModalZanja();
@@ -1422,7 +1494,7 @@ function abrirModalZanja(id) {
             <div style="display:flex; align-items:center; gap:5px;">
                 <input type="number" min="0" max="${maxMetros}" placeholder="0" value="${val}" 
                        style="width:75px; padding:5px; border:1px solid #cbd5e1; border-radius:6px; text-align:center; font-weight:bold; color:var(--accent);"
-                       oninput="changeMetrosZanja('${escapeJsStr(id)}', '${item.id}', this.value, ${maxMetros})">
+                       data-action="zanja-input" data-id="${escapeHtml(id)}" data-item="${item.id}" data-max="${maxMetros}">
                 <span style="color:#64748b; font-weight:600; font-size:13px; min-width:65px;">/ [${maxMetros} m]</span>
             </div>
         </div>`;
@@ -1442,7 +1514,9 @@ function cerrarModalZanja() {
     if(m) m.remove();
 }
 
-async function changeMetrosZanja(id, itemId, value, maxMetros) {
+let _zanjaTimers = {};
+
+function changeMetrosZanja(id, itemId, value, maxMetros) {
     if (!HISTORIAL_ZANJAS[id]) HISTORIAL_ZANJAS[id] = {};
     
     let num = parseFloat(value);
@@ -1452,8 +1526,14 @@ async function changeMetrosZanja(id, itemId, value, maxMetros) {
         if (num > maxMetros) num = maxMetros;
         HISTORIAL_ZANJAS[id][itemId] = num;
     }
-    try { await localforage.setItem('HISTORIAL_ZANJAS', HISTORIAL_ZANJAS); } catch (e) { console.error(e); }
-    renderMatrixZanjas();
+    
+    const key = id + '_' + itemId;
+    if (_zanjaTimers[key]) clearTimeout(_zanjaTimers[key]);
+    _zanjaTimers[key] = setTimeout(async () => {
+        delete _zanjaTimers[key];
+        try { await localforage.setItem('HISTORIAL_ZANJAS', HISTORIAL_ZANJAS); } catch (e) { console.error(e); }
+        renderMatrixZanjas();
+    }, 300);
 }
 
 function renderDashboardZanjas() {
@@ -1584,8 +1664,6 @@ function renderDashboardPuntuales() {
     container.innerHTML = html;
 }
 
-const pmoDB = localforage.createInstance({ name: 'SIGMA_PMO', storeName: 'partes_v13' });
-
 async function sincronizarConPMO() {
     try {
         let conteoDiario = {};
@@ -1683,26 +1761,6 @@ async function sincronizarConPMO() {
         // 2. Descargar historial de PMO
         const pmoDB = localforage.createInstance({ name: 'SIGMA_PMO', storeName: 'partes_v13' });
         let histPMO = await pmoDB.getItem('PMO_HISTORIAL_PRODUCCION') || {};
-
-        // 3. Limpieza de Ceros (Añadido el Vallado perimetral)
-        const itemsAprobados = [
-            'Instalación de hincas', 'Montaje de estructura', 'Montaje de módulos', 
-            'Instalacion mecánica de cajas', 'arquetas', 'CSB', 'instalacion de baculos', 
-            'MBOX', 'GATEWAY', 'TBOX', 'Estación Meteorológica',
-            'cimentaciones cctv', 'cimentaciones torres', 'Vallado perimetral'
-        ];
-
-        for (let fecha in histPMO) {
-            for (let disc in histPMO[fecha]) {
-                for (let grupo in histPMO[fecha][disc]) {
-                    if (Array.isArray(histPMO[fecha][disc][grupo])) {
-                        histPMO[fecha][disc][grupo].forEach(sub => {
-                            if (itemsAprobados.includes(sub.item)) sub.cantidad = 0; 
-                        });
-                    }
-                }
-            }
-        }
 
         // 4. Volcado Final Inyectando Cantidades
         for (let fecha in conteoDiario) {
@@ -1836,7 +1894,7 @@ function abrirModalVallado(id, parcelaName, metros) {
             
     CHECKLIST_VALLADO_ITEMS.forEach(item => { 
         const isChecked = checks[item.id] !== undefined ? 'checked' : ''; 
-        html += `<label class="check-item"><input type="checkbox" ${isChecked} onchange="toggleCheckVallado('${escapeJsStr(id)}', '${item.id}', this.checked)">${item.label}</label>`; 
+        html += `<label class="check-item"><input type="checkbox" ${isChecked} data-action="check-vallado" data-id="${escapeHtml(id)}" data-item="${item.id}">${item.label}</label>`; 
     });
     
     html += `

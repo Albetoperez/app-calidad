@@ -8,6 +8,14 @@ function esc(str) {
     div.textContent = str;
     return div.innerHTML;
 }
+function safeHtmlId(str) {
+    if (!str) return '';
+    return String(str).replace(/[^a-zA-Z0-9-_:]/g, '_');
+}
+function escapeJsStr(str) {
+    if (!str) return '';
+    return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/</g, '\\x3C').replace(/>/g, '\\x3E').replace(/\n/g, '\\n');
+}
 
 const RESERVED = ['__proto__', 'constructor', 'prototype'];
 
@@ -364,7 +372,7 @@ function renderGruposConfig() {
                             </td>
                             <td><input type="date" value="${sub.fechaInicio || ''}" class="cfg-input ${disabledClass} input-sub-fechaini" data-grupo="${esc(gName)}" data-idx="${idx}" ${lineaBaseBloqueada ? 'readonly' : ''}></td>
                             <td><input type="date" value="${sub.fechaFin || ''}" class="cfg-input ${disabledClass} input-sub-fechafin" data-grupo="${esc(gName)}" data-idx="${idx}" ${lineaBaseBloqueada ? 'readonly' : ''}></td>
-                            <td style="text-align:center;"><button class="btn-vinculos ${disabledClass}" style="${btnStyle}" onclick="abrirModalVinculos('${esc(gName)}', ${idx})" ${lineaBaseBloqueada ? 'disabled' : ''}>${btnText}</button></td>
+                            <td style="text-align:center;"><button class="btn-vinculos ${disabledClass}" style="${btnStyle}" onclick="abrirModalVinculos('${escapeJsStr(gName)}', ${idx})" ${lineaBaseBloqueada ? 'disabled' : ''}>${btnText}</button></td>
                             <td class="${hiddenClass}"><button style="border:none; background:none; color:red;" class="btn-eliminar-sub" data-grupo="${esc(gName)}" data-idx="${idx}">❌</button></td>
                         </tr>`;
         });
@@ -399,8 +407,8 @@ function abrirModalVinculos(grupo, idx) {
                 
                 html += `
                 <div class="checkbox-item">
-                    <input type="checkbox" id="chk-${esc(idUnico)}" value="${esc(idUnico)}" class="chk-vinculo" ${isChecked}>
-                    <label for="chk-${esc(idUnico)}"><strong>${esc(g)}</strong>: ${esc(sub.item)}</label>
+                    <input type="checkbox" id="chk-${safeHtmlId(idUnico)}" value="${esc(idUnico)}" class="chk-vinculo" ${isChecked}>
+                    <label for="chk-${safeHtmlId(idUnico)}"><strong>${esc(g)}</strong>: ${esc(sub.item)}</label>
                 </div>`;
             });
         }
@@ -676,11 +684,11 @@ async function renderAcordeonesCertificaciones() {
                         <div style="display: flex; align-items: center; justify-content: flex-end; gap: 5px; flex-wrap: wrap;">
                             <div style="display:flex; align-items:center; gap:3px;">
                                 <span style="font-size: 0.7rem; color: #005596; font-weight:bold;">Contrato:</span>
-                                <input type="number" id="certif-${esc(gName)}-${idx}" min="0" step="0.01" class="cfg-input input-add input-certif" style="width: 85px; text-align: right; font-weight: bold; border-color:#005596;" placeholder="0,00">
+                                <input type="number" id="certif-${safeHtmlId(gName)}-${idx}" min="0" step="0.01" class="cfg-input input-add input-certif" style="width: 85px; text-align: right; font-weight: bold; border-color:#005596;" placeholder="0,00" value="${importeHoy > 0 ? importeHoy : ''}">
                             </div>
                             <div style="display:flex; align-items:center; gap:3px;">
                                 <span style="font-size: 0.7rem; color: #dc2626; font-weight:bold;">Sobrecoste:</span>
-                                <input type="number" id="certif-sobre-${esc(gName)}-${idx}" min="0" step="0.01" class="cfg-input input-add input-certif" style="width: 85px; text-align: right; font-weight: bold; border-color:#dc2626; background:#fef2f2;" placeholder="0,00">
+                                <input type="number" id="certif-sobre-${safeHtmlId(gName)}-${idx}" min="0" step="0.01" class="cfg-input input-add input-certif" style="width: 85px; text-align: right; font-weight: bold; border-color:#dc2626; background:#fef2f2;" placeholder="0,00" value="${sobrecosteHoy > 0 ? sobrecosteHoy : ''}">
                             </div>
                         </div>
                     </td>
@@ -721,8 +729,8 @@ async function guardarCertificacion() {
 
         for (let g in ESTRUCTURA[disciplinaActiva]) {
             data[g] = ESTRUCTURA[disciplinaActiva][g].map((sub, i) => {
-                const input = document.getElementById(`certif-${esc(g)}-${i}`);
-                const inputSobre = document.getElementById(`certif-sobre-${esc(g)}-${i}`);
+                const input = document.getElementById(`certif-${safeHtmlId(g)}-${i}`);
+                const inputSobre = document.getElementById(`certif-sobre-${safeHtmlId(g)}-${i}`);
                 let importe = input ? (parseFloat(input.value) || 0) : 0;
                 let sobrecoste = inputSobre ? (parseFloat(inputSobre.value) || 0) : 0;
                 if (importe < 0) importe = 0;
@@ -730,8 +738,8 @@ async function guardarCertificacion() {
                 const prev = (existente[g] && existente[g][i]) ? existente[g][i] : null;
                 return {
                     item: sub.item,
-                    importe: (prev ? prev.importe || 0 : 0) + importe,
-                    sobrecoste: (prev ? prev.sobrecoste || 0 : 0) + sobrecoste
+                    importe: importe,
+                    sobrecoste: sobrecoste
                 };
             });
         }
@@ -806,7 +814,7 @@ async function renderAcordeones() {
                     <td style="vertical-align: middle; padding-left: 0;">
                         <div style="display: flex; align-items: center; justify-content: flex-end; gap: 5px;">
                             <span style="font-size: 0.8rem; color: #b45309; font-weight:bold;">+ Añadir:</span>
-                            <input type="number" id="prod-${esc(gName)}-${idx}" step="any" class="cfg-input input-add" style="width: 80px; text-align: right; font-weight: bold;" placeholder="0">
+                            <input type="number" id="prod-${safeHtmlId(gName)}-${idx}" step="any" class="cfg-input input-add" style="width: 80px; text-align: right; font-weight: bold;" placeholder="0" value="${valorHoy > 0 ? valorHoy : ''}">
                         </div>
                     </td>
                 </tr>`;
@@ -820,7 +828,6 @@ async function renderAcordeones() {
 }
 
 function validarProduccionDiaria(input) {
-    // Función liberada: ahora se permiten ajustes negativos
 }
 
 async function guardarParte() {
@@ -850,7 +857,7 @@ async function guardarParte() {
 
         for (let g in ESTRUCTURA[disciplinaActiva]) {
             data[g] = ESTRUCTURA[disciplinaActiva][g].map((sub, i) => {
-                const input = document.getElementById(`prod-${esc(g)}-${i}`);
+                const input = document.getElementById(`prod-${safeHtmlId(g)}-${i}`);
                 let valorAgregado = input ? (parseFloat(input.value) || 0) : 0;
                                 
                 // Rescatamos lo que ya estuviera guardado hoy (si lo hay) y se lo sumamos a lo nuevo
@@ -858,7 +865,7 @@ async function guardarParte() {
                 
                 return { 
                     item: sub.item, 
-                    cantidad: (prev ? prev.cantidad || 0 : 0) + valorAgregado, 
+                    cantidad: valorAgregado, 
                     unidad: sub.unidad 
                 };
             });
@@ -1307,6 +1314,29 @@ async function importarMetasDesdeProd() {
             return;
         }
 
+        function safeGet(obj, prop, def) {
+            return (obj && obj[prop] !== undefined && obj[prop] !== null) ? obj[prop] : def;
+        }
+
+        const t = {
+            hincas: safeGet(totales, 'hincas', 0),
+            trackers: safeGet(totales, 'trackers', 0),
+            modulos: safeGet(totales, 'modulos', 0),
+            power_stations: safeGet(totales, 'power_stations', 0),
+            scb: safeGet(totales, 'scb', 0),
+            cctv: safeGet(totales, 'cctv', 0),
+            vallado: safeGet(totales, 'vallado', 0),
+            zanjas_bt: safeGet(totales, 'zanjas_bt', 0),
+            zanjas_mt: safeGet(totales, 'zanjas_mt', 0),
+            zanjas_cctv: safeGet(totales, 'zanjas_cctv', 0),
+            arquetas: safeGet(totales, 'arquetas', 0),
+            mbox: safeGet(totales, 'mbox', 0),
+            tbox: safeGet(totales, 'tbox', 0),
+            gateway: safeGet(totales, 'gateway', 0),
+            csb: safeGet(totales, 'csb', 0),
+            meteos: safeGet(totales, 'meteos', 0)
+        };
+
         // 2. Volcamos la información limpia en tu WBS
         if (typeof ESTRUCTURA !== 'undefined') {
             for (let disc in ESTRUCTURA) {
@@ -1321,63 +1351,63 @@ async function importarMetasDesdeProd() {
                         const nombreItem = item.item.toLowerCase();
 
                         // --- LOGÍSTICA ---
-                        if (grupoUpper.includes('1.1 HINCAS') && nombreItem.includes('suministro')) item.meta = totales.hincas;
-                        if (grupoUpper.includes('1.2 ESTRUCTURA') && nombreItem.includes('suministro de estructura')) item.meta = totales.trackers;
+                        if (grupoUpper.includes('1.1 HINCAS') && nombreItem.includes('suministro')) item.meta = t.hincas;
+                        if (grupoUpper.includes('1.2 ESTRUCTURA') && nombreItem.includes('suministro de estructura')) item.meta = t.trackers;
                         if ((grupoUpper.includes('1.3 MODULOS') || grupoUpper.includes('1.3 MÓDULOS')) && 
                             (nombreItem.includes('suministro de modulos') || nombreItem.includes('suministro de módulos'))) {
-                            item.meta = totales.modulos;
+                            item.meta = t.modulos;
                         }
-                        if (grupoUpper.includes('1.4 INVERSORES') && nombreItem.includes('suministro de inversores')) item.meta = totales.power_stations;
-                        if (grupoUpper.includes('1.6 SCBS') && nombreItem.includes('suministro de cajas scb')) item.meta = totales.scb;
-                        if (grupoUpper.includes('1.7 SCADA Y CCTV') && nombreItem.includes('suministro de cctv')) item.meta = totales.cctv;
+                        if (grupoUpper.includes('1.4 INVERSORES') && nombreItem.includes('suministro de inversores')) item.meta = t.power_stations;
+                        if (grupoUpper.includes('1.6 SCBS') && nombreItem.includes('suministro de cajas scb')) item.meta = t.scb;
+                        if (grupoUpper.includes('1.7 SCADA Y CCTV') && nombreItem.includes('suministro de cctv')) item.meta = t.cctv;
 
                         // --- OBRA CIVIL --- 
-                        if (grupoUpper.includes('2.2 VALLADO PERIMETRAL') && nombreItem.includes('vallado perimetral')) item.meta = Math.round(totales.vallado);
-                        if (grupoUpper.includes('2.4 LOSAS POWER STATION') && nombreItem.includes('skid')) item.meta = totales.power_stations;
+                        if (grupoUpper.includes('2.2 VALLADO PERIMETRAL') && nombreItem.includes('vallado perimetral')) item.meta = Math.round(t.vallado);
+                        if (grupoUpper.includes('2.4 LOSAS POWER STATION') && nombreItem.includes('skid')) item.meta = t.power_stations;
 
                         // Zanjas BT y MT
                         if (grupoUpper.includes('2.6 ZANJAS DE BT') && (nombreItem.includes('excavacion') || nombreItem.includes('excavación') || nombreItem.includes('tubos') || nombreItem.includes('relleno'))) {
-                            item.meta = Math.round(totales.zanjas_bt);
+                            item.meta = Math.round(t.zanjas_bt);
                         }
                         if (grupoUpper.includes('2.7 ZANJAS DE MT') && (nombreItem.includes('excavacion') || nombreItem.includes('excavación') || nombreItem.includes('tubos') || nombreItem.includes('relleno'))) {
-                            item.meta = Math.round(totales.zanjas_mt);
+                            item.meta = Math.round(t.zanjas_mt);
                         }
 
                         // Mantenemos Arquetas y CCTV Civil como estaban por si acaso
                         if (grupoUpper.includes('2.8 ARQUETAS')) {
-                            if (nombreItem === 'arquetas') item.meta = totales.arquetas;
-                            if (nombreItem.includes('torre') || nombreItem.includes('comunicaciones')) item.meta = (totales.mbox + totales.tbox + totales.gateway + totales.csb);
-                            if (nombreItem.includes('cctv') && !nombreItem.includes('zanjas')) item.meta = totales.cctv;
+                            if (nombreItem === 'arquetas') item.meta = t.arquetas;
+                            if (nombreItem.includes('torre') || nombreItem.includes('comunicaciones')) item.meta = (t.mbox + t.tbox + t.gateway + t.csb);
+                            if (nombreItem.includes('cctv') && !nombreItem.includes('zanjas')) item.meta = t.cctv;
                         }
                         if (grupoUpper.includes('2.9 CCTV') || grupoUpper.includes('ZANJAS CCTV')) {
-                             if (nombreItem.includes('excavacion') || nombreItem.includes('excavación') || nombreItem.includes('tubos') || nombreItem.includes('relleno')) item.meta = Math.round(totales.zanjas_cctv);
+                             if (nombreItem.includes('excavacion') || nombreItem.includes('excavación') || nombreItem.includes('tubos') || nombreItem.includes('relleno')) item.meta = Math.round(t.zanjas_cctv);
                         }
 
                         // --- MECÁNICA ---
-                        if (grupoUpper.includes('3.1 INSTALACIÓN DE HINCAS') && (nombreItem.includes('instalación') || nombreItem.includes('instalacion'))) item.meta = totales.hincas;
-                        if (grupoUpper.includes('3.2 MONTAJE DE ESTRUCTURA') && nombreItem.includes('montaje')) item.meta = totales.trackers;
+                        if (grupoUpper.includes('3.1 INSTALACIÓN DE HINCAS') && (nombreItem.includes('instalación') || nombreItem.includes('instalacion'))) item.meta = t.hincas;
+                        if (grupoUpper.includes('3.2 MONTAJE DE ESTRUCTURA') && nombreItem.includes('montaje')) item.meta = t.trackers;
                         if ((grupoUpper.includes('3.3 MONTAJE DE MODULOS') || grupoUpper.includes('3.3 MONTAJE DE MÓDULOS')) && 
                             (nombreItem.includes('montaje de modulos') || nombreItem.includes('montaje de módulos') || nombreItem.includes('montaje'))) {
-                            item.meta = totales.modulos;
+                            item.meta = t.modulos;
                         }
 
                         // --- ELÉCTRICA / COMUNICACIONES ---
-                        if (grupoUpper.includes('4.5 POWER STATION') && (nombreItem.includes('equipo') || nombreItem.includes('instalacion') || nombreItem.includes('instalación'))) item.meta = totales.power_stations;
+                        if (grupoUpper.includes('4.5 POWER STATION') && (nombreItem.includes('equipo') || nombreItem.includes('instalacion') || nombreItem.includes('instalación'))) item.meta = t.power_stations;
                         
                         if (grupoUpper.includes('4.5 SCBS') && (nombreItem.includes('instalación mecánica') || nombreItem.includes('instalacion mecanica') || nombreItem.includes('instalacion mecánica'))) {
-                            item.meta = totales.scb;
+                            item.meta = t.scb;
                         }
                         
                         if (grupoUpper.includes('4.7 TORRES DE COMUNICACION') || grupoUpper.includes('4.7 TORRES DE COMUNICACIÓN')) {
-                            if (nombreItem === 'mbox') item.meta = totales.mbox;
-                            if (nombreItem === 'tbox') item.meta = totales.tbox;
-                            if (nombreItem === 'csb') item.meta = totales.csb;
-                            if (nombreItem === 'gateway') item.meta = totales.gateway;
+                            if (nombreItem === 'mbox') item.meta = t.mbox;
+                            if (nombreItem === 'tbox') item.meta = t.tbox;
+                            if (nombreItem === 'csb') item.meta = t.csb;
+                            if (nombreItem === 'gateway') item.meta = t.gateway;
                         }
-                        if (grupoUpper.includes('4.8 CCTV') && (nombreItem.includes('baculo') || nombreItem.includes('báculo') || nombreItem.includes('camara') || nombreItem.includes('cámara'))) item.meta = totales.cctv;
+                        if (grupoUpper.includes('4.8 CCTV') && (nombreItem.includes('baculo') || nombreItem.includes('báculo') || nombreItem.includes('camara') || nombreItem.includes('cámara'))) item.meta = t.cctv;
                         
                         if ((grupoUpper.includes('4.10 ESTACIÓN METEOROLÓGICA') || grupoUpper.includes('4.10 ESTACION METEOROLOGICA')) && (nombreItem.includes('estación meteorológica') || nombreItem.includes('estacion meteorologica'))) {
-                            item.meta = totales.meteos;
+                            item.meta = t.meteos;
                         }
                     });
                 }
